@@ -18,6 +18,9 @@ function GameCard({ game, onSelect }) {
     <div
       ref={tiltRef}
       className="card"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(game); }}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       onClick={() => onSelect(game)}
