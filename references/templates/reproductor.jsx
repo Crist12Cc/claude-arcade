@@ -19,7 +19,7 @@ function GamePlayer({ id, user, navigate, onSaveScore }) {
   }, [over, paused]);
 
   useEffectP(() => {
-    if (score > 0 && score % 2500 < 100) setLevel(l => l + 1);
+    setLevel(Math.floor(score / 2500) + 1);
   }, [score]);
 
   const endGame = () => setOver(true);
