@@ -28,7 +28,7 @@
   --mono: var(--font-mono-av), "JetBrains Mono", "Courier Prime", "Courier New", monospace;
 }
 
-* { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root {
   height: 100%;
