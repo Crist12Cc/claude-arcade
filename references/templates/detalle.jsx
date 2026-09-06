@@ -3,7 +3,8 @@ const { useMemo: useMemoD } = React;
 
 function GameDetail({ id, navigate }) {
   const game = useMemoD(() => GAMES.find(g => g.id === id), [id]);
-  const scores = useMemoD(() => seededScores(id.length * 17 + 3, 10), [id]);
+  const idSeed = useMemoD(() => [...id].reduce((acc, ch) => acc * 31 + ch.charCodeAt(0), 7), [id]);
+  const scores = useMemoD(() => seededScores(idSeed * 17 + 3, 10), [idSeed]);
   if (!game) return null;
 
   return (
