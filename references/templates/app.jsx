@@ -15,7 +15,7 @@ function App() {
 
   useEffectApp(() => {
     location.hash = encodeURIComponent(JSON.stringify(route));
-    window.scrollTo({ top: 0, behavior: "instant" });
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, [route]);
 
   const navigate = (r) => setRoute(r);
