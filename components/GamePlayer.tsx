@@ -22,16 +22,10 @@ export default function GamePlayer({ game }: { game: Game }) {
   const [lives] = useState(3);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
-  const [name, setName] = useState("INVITADO");
+  const [nameOverride, setNameOverride] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const level = Math.floor(score / 2500) + 1;
-
-  useEffect(() => {
-    // the session hook resolves the logged-in user asynchronously post-mount,
-    // so the HUD name is synced once it becomes available
-    if (over) return;
-    setName(user ? user.name : "INVITADO");
-  }, [user, over]);
+  const name = nameOverride ?? (user ? user.name : "INVITADO");
 
   useEffect(() => {
     if (over || paused) return;
@@ -47,6 +41,7 @@ export default function GamePlayer({ game }: { game: Game }) {
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setNameOverride(null);
   };
 
   return (
@@ -129,7 +124,7 @@ export default function GamePlayer({ game }: { game: Game }) {
               <div className="input-row">
                 <input
                   value={name}
-                  onChange={(e) => setName(e.target.value.toUpperCase().slice(0, 10))}
+                  onChange={(e) => setNameOverride(e.target.value.toUpperCase().slice(0, 10))}
                   placeholder="TUS INICIALES"
                 />
                 <button
