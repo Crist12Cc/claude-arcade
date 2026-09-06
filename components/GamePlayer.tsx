@@ -29,9 +29,9 @@ export default function GamePlayer({ game }: { game: Game }) {
   useEffect(() => {
     // the session hook resolves the logged-in user asynchronously post-mount,
     // so the HUD name is synced once it becomes available
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (over) return;
     setName(user ? user.name : "INVITADO");
-  }, [user]);
+  }, [user, over]);
 
   useEffect(() => {
     if (over || paused) return;
