@@ -1,6 +1,6 @@
 # SPEC 03 — Página "Acerca de" y envío de correo de contacto
 
-**Estado:** Aprobado
+**Estado:** Implemented
 **Depende de:** SPEC 02
 **Fecha:** 2026-09-06
 
