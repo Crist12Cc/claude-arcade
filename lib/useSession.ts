@@ -18,19 +18,19 @@ function readUser(): StoredUser | null {
 }
 
 export function useSession() {
-  const [user, setUser] = useState<StoredUser | null>(null);
+  const [user, setUser] = useState<StoredUser | null>(() => readUser());
 
   useEffect(() => {
-    // localStorage is only available client-side, so the real value is read post-mount
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUser(readUser());
-
     const sync = () => setUser(readUser());
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY || e.key === null) sync();
+    };
+
     window.addEventListener(CHANGE_EVENT, sync);
-    window.addEventListener("storage", sync);
+    window.addEventListener("storage", onStorage);
     return () => {
       window.removeEventListener(CHANGE_EVENT, sync);
-      window.removeEventListener("storage", sync);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
