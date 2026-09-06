@@ -7,7 +7,8 @@ import { useSession } from "@/lib/useSession";
 
 function saveScore(entry: { game: string; score: number; name: string }) {
   try {
-    const all = JSON.parse(localStorage.getItem("av_scores") || "[]");
+    const parsed = JSON.parse(localStorage.getItem("av_scores") || "[]");
+    const all = Array.isArray(parsed) ? parsed : [];
     all.push({ ...entry, at: Date.now() });
     localStorage.setItem("av_scores", JSON.stringify(all));
   } catch {
