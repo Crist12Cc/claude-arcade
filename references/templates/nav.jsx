@@ -14,8 +14,8 @@ function Nav({ route, navigate, user, onSignOut }) {
           <div className="logo-text neon-cyan">ARCADE <span className="neon-magenta">VAULT</span></div>
         </div>
         <div className="links">
-          <a className={isActive("biblioteca") ? "active" : ""} onClick={() => go({ name: "biblioteca" })}>Biblioteca</a>
-          <a className={isActive("salon") ? "active" : ""} onClick={() => go({ name: "salon" })}>Salón de la Fama</a>
+          <a href="#" className={isActive("biblioteca") ? "active" : ""} onClick={(e) => { e.preventDefault(); go({ name: "biblioteca" }); }}>Biblioteca</a>
+          <a href="#" className={isActive("salon") ? "active" : ""} onClick={(e) => { e.preventDefault(); go({ name: "salon" }); }}>Salón de la Fama</a>
         </div>
         <div className="spacer"></div>
         <div className="coin-counter">
