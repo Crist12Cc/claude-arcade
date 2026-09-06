@@ -3,6 +3,7 @@ const { useState: useStateP, useEffect: useEffectP } = React;
 
 function GamePlayer({ id, user, navigate, onSaveScore }) {
   const game = GAMES.find(g => g.id === id);
+  if (!game) return null;
   const [score, setScore] = useStateP(0);
   const [lives, setLives] = useStateP(3);
   const [level, setLevel] = useStateP(1);
