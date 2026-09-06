@@ -3,10 +3,10 @@ const { useState: useStateS, useMemo: useMemoS } = React;
 
 function HallOfFame({ user, navigate }) {
   const [tab, setTab] = useStateS(GAMES[0].id);
-  const rows = useMemoS(() => seededScores(tab.length * 23 + 7, 12), [tab]);
+  const tabSeed = useMemoS(() => [...tab].reduce((acc, ch) => acc * 31 + ch.charCodeAt(0), 7), [tab]);
+  const rows = useMemoS(() => seededScores(tabSeed * 23 + 7, 12), [tabSeed]);
   const game = GAMES.find(g => g.id === tab);
-  const youRank = user ? Math.floor(8 + (tab.length % 4)) : null;
-  const youScore = user ? (rows[5]?.score - 2400) : null;
+  const youRank = user ? Math.floor(8 + (tabSeed % 4)) : null;
 
   return (
     <div className="av-hall fade-in">
