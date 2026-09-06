@@ -1,6 +1,6 @@
 # SPEC 01 — MVP Visual Arcade Vault
 
-**Estado:** Approved
+**Estado:** Implementado
 **Depende de:** Ninguno
 **Fecha:** 2026-09-06
 
