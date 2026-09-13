@@ -1,35 +1,26 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Game } from '@/lib/data';
 import { useSession } from '@/lib/useSession';
+import { createClient } from '@/lib/supabase/client';
 import {
   createAsteroidsEngine,
   type AsteroidsEngine,
 } from '@/lib/games/asteroids/engine';
-function saveScore(entry: { game: string; score: number; name: string }) {
-  try {
-    const parsed = JSON.parse(localStorage.getItem('av_scores') || '[]');
-    const all = Array.isArray(parsed) ? parsed : [];
-    all.push({ ...entry, at: Date.now() });
-    localStorage.setItem('av_scores', JSON.stringify(all));
-  } catch {
-    // ignore malformed/unavailable storage
-  }
-}
 const isAsteroids = (game: Game) => game.id === 'rocas';
 export default function GamePlayer({ game }: { game: Game }) {
   const { user } = useSession();
+  const supabase = useMemo(() => createClient(), []);
   const asteroids = isAsteroids(game);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [engineLevel, setEngineLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
-  const [nameOverride, setNameOverride] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const level = asteroids ? engineLevel : Math.floor(score / 2500) + 1;
-  const name = nameOverride ?? (user ? user.name : 'INVITADO');
+  const name = user ? user.name : 'INVITADO';
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<AsteroidsEngine | null>(null);
   const gameOverHandledRef = useRef(false);
@@ -74,7 +65,13 @@ export default function GamePlayer({ game }: { game: Game }) {
     setPaused(false);
     setOver(false);
     setSaved(false);
-    setNameOverride(null);
+  };
+  const saveScore = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('scores')
+      .insert({ game_id: game.id, user_id: user.id, score });
+    if (!error) setSaved(true);
   };
   return (
     <div className="av-player fade-in">
@@ -166,24 +163,18 @@ export default function GamePlayer({ game }: { game: Game }) {
             <div className="final-label">PUNTUACIÓN FINAL</div>
             <div className="final">{score.toLocaleString('es-ES')}</div>
             {!saved ? (
-              <div className="input-row">
-                <input
-                  value={name}
-                  onChange={(e) =>
-                    setNameOverride(e.target.value.toUpperCase().slice(0, 10))
-                  }
-                  placeholder="TUS INICIALES"
-                />
-                <button
-                  className="btn yellow"
-                  onClick={() => {
-                    saveScore({ game: game.id, score, name });
-                    setSaved(true);
-                  }}
-                >
-                  GUARDAR PUNTUACIÓN
-                </button>
-              </div>
+              user ? (
+                <div className="input-row">
+                  <button className="btn yellow" onClick={saveScore}>
+                    GUARDAR PUNTUACIÓN
+                  </button>
+                </div>
+              ) : (
+                <div className="toast-saved">
+                  INICIA SESIÓN PARA GUARDAR TU PUNTUACIÓN ·{' '}
+                  <Link href="/login">IR A INICIAR SESIÓN →</Link>
+                </div>
+              )
             ) : (
               <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
             )}
