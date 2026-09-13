@@ -1,6 +1,6 @@
 # SPEC 04 — Cimientos de Supabase y autenticación real
 
-**Estado:** Approved
+**Estado:** Implementado
 **Depende de:** SPEC 01, SPEC 03
 **Fecha:** 2026-09-13
 
