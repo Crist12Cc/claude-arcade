@@ -1,6 +1,6 @@
 # SPEC 06 — Leaderboard real y catálogo de juegos en Supabase
 
-**Estado:** Aprobado
+**Estado:** Implementado
 **Depende de:** SPEC 01, SPEC 04, SPEC 05
 **Fecha:** 2026-09-13
 

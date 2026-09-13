@@ -170,9 +170,24 @@ export default function GamePlayer({ game }: { game: Game }) {
                   </button>
                 </div>
               ) : (
-                <div className="toast-saved">
-                  INICIA SESIÓN PARA GUARDAR TU PUNTUACIÓN ·{' '}
-                  <Link href="/login">IR A INICIAR SESIÓN →</Link>
+                <div
+                  className="mono"
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--ink-dim)',
+                    letterSpacing: '0.08em',
+                    marginTop: 14,
+                  }}
+                >
+                  INICIA SESIÓN PARA GUARDAR TU PUNTUACIÓN
+                  <br />
+                  <Link
+                    href="/login"
+                    className="btn ghost"
+                    style={{ marginTop: 10 }}
+                  >
+                    IR A INICIAR SESIÓN →
+                  </Link>
                 </div>
               )
             ) : (
