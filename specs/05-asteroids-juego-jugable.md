@@ -1,6 +1,6 @@
 # SPEC 05 — Asteroids: primer juego jugable (ROCAS)
 
-**Estado:** Approved
+**Estado:** Implementado
 **Depende de:** SPEC 01
 **Fecha:** 2026-09-13
 
