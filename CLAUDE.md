@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Arcade Vault — a platform to play games online and compete for the highest score (see README.md, in Spanish).
 
-This is a freshly scaffolded Next.js 16.3.4 app (App Router, React 19.2.8, TypeScript, Tailwind CSS v4). No custom app logic exists yet beyond the default `create-next-app` output (`app/layout.tsx`, `app/page.tsx`, `app/globals.css`).
+Next.js 16.3.4 app (App Router, React 19.2.8, TypeScript, Tailwind CSS v4) backed by Supabase (auth + database). The MVP visual shell, real auth, and a growing catalog of playable games with a real leaderboard are implemented — see `specs/` for the full history and current status of each feature.
 
 ## Commands
 
@@ -26,6 +26,30 @@ There is no test runner configured yet.
 - Styling is Tailwind CSS v4 via `@tailwindcss/postcss` (no `tailwind.config.js` — v4 uses CSS-based config in `app/globals.css`).
 - Fonts are loaded via `next/font/google` (Geist, Geist Mono) and exposed as CSS variables on the `<html>` element.
 
+### Routes (`app/`)
+
+- `/` — Home landing page (hero, features).
+- `/biblioteca` — game catalog (`BibliotecaClient.tsx`), reads from Supabase.
+- `/juego/[id]` — game detail page.
+- `/jugar/[id]` — game player (`GamePlayer.tsx`), mounts the engine for the given game `id` and saves scores on game over.
+- `/salon` — leaderboard / Salón de la Fama (`SalonClient.tsx`).
+- `/login` — real auth (sign in / sign up / guest) against Supabase.
+- `/about` — about page with a contact form (`app/api/contact`, sent via Resend).
+
+### Supabase integration
+
+- `lib/supabase/client.ts` / `lib/supabase/server.ts` — browser/server Supabase clients (`@supabase/ssr`).
+- `middleware.ts` — refreshes the session cookie on every request; no routes are protected.
+- `lib/useSession.ts` — session hook (`{ user, signIn, signOut }`), backed by Supabase auth + `profiles`.
+- Tables: `public.profiles` (auto-created via trigger on `auth.users`), `public.games` (catalog, replaces the old hardcoded `lib/data.ts` list), `public.scores` (one row per finished game, tied to `games` + `profiles`), and the `public.games_with_stats` view (computes `best`/`plays` per game from `scores`).
+- Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (see `.env.example`).
+
+### Games (`lib/games/<id>/engine.ts`)
+
+Each playable game is a self-contained engine following a fixed contract (`start`, `destroy`, `setPaused`, `restart`, `onStateChange` callback with `{score, lives, level, gameOver}`), registered in `components/GamePlayer.tsx`. Currently ported: `asteroids` (ROCAS), `tetris`, `bloque-buster` (Arkanoid), `serpentina` (Snake). Adding a new game does **not** require touching the catalog/leaderboard/player pages — they're generic and read everything from Supabase by `id`. Use the `new-game` skill (`.claude/skills/new-game/SKILL.md`) to port a new game following this pattern.
+
+See `references/impl-games.md` for the full catalog table (id, title, category, short description, color) of all games currently seeded in `public.games`, including mock shells without a real engine yet.
+
 ## Spec-driven development
 
 This project follows spec-driven design using `/spec` and `/spec-impl` conventions from https://github.com/Klerith/fernando-skills. Install the associated skills with:
@@ -33,3 +57,18 @@ This project follows spec-driven design using `/spec` and `/spec-impl` conventio
 ```bash
 npx skills@latest add Klerith/fernando-skills
 ```
+
+Specs live in `specs/` (`01`–`09` so far, each marked "Implementado" once done); read the relevant spec before touching a feature it covers.
+
+## Project skills
+
+- `new-game` (`.claude/skills/new-game/SKILL.md`) — repeatable pattern for porting a new game into the catalog: engine in `lib/games/<id>/engine.ts`, registration in `GamePlayer.tsx`, seed row in Supabase `games`, cover CSS class `cover-<id>`. Reference sources for not-yet-ported games live under `references/started-games/`.
+- `game-jam` (`.claude/skills/game-jam/SKILL.md`) — genera 3 propuestas de juego distintas y en paralelo a partir de un tema libre, cada una con spec completa, guardadas en carpetas versionadas bajo `specs/game-jam/`. El usuario elige una al final.
+- `worktree` — spins up an isolated git worktree under `.trees/<name>` to run a requirement without touching the main checkout.
+
+## Project subagents
+
+- `game-curator` (`.claude/agents/game-curator.md`) — read-only planner that decides which game to port next: reads `references/impl-games.md`, `references/started-games/`, and `specs/`, and keeps persistent memory of its past suggestions in `references/game-suggestions-todo.md` so it doesn't repeat itself across runs. It never implements a port — use the `new-game` skill for that once a suggestion is chosen.
+- `game-jam-designer` (`.claude/agents/game-jam-designer.md`) — redacta UNA propuesta completa de juego (spec en formato `specs/`) a partir de un tema y un ángulo de diseño asignado. Usado en paralelo por la skill `game-jam`. No implementa código ni toca el catálogo real.
+- `mobile-reviewer` (`.claude/agents/mobile-reviewer.md`) — revisor de solo lectura (con permiso de escritura únicamente sobre el checklist) que audita si un juego se ve y funciona bien en web y en móvil. Actualiza `references/mobile-review-checklist.md` con el resultado. No corrige código.
+- `skin-reviewer` (`.claude/agents/skin-reviewer.md`) — revisor de código de solo lectura que verifica si un juego implementa al menos 3 skins visuales (neon, retro, clásico/default). No implementa ni corrige código — solo reporta hallazgos.
