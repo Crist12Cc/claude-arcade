@@ -1,28 +1,58 @@
 "use client";
-
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { useSession } from "@/lib/useSession";
-
+import { useMemo, useState, type FormEvent } from "react";
+import { createClient } from "@/lib/supabase/client";
+/** Traduce los errores de Supabase Auth a mensajes en español. */
+function translateAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login credentials")) return "Usuario o contraseña incorrectos.";
+  if (m.includes("user already registered") || m.includes("already been registered"))
+    return "Ese correo ya tiene una cuenta. Inicia sesión.";
+  if (m.includes("password should be at least"))
+    return "La contraseña es demasiado corta (mínimo 6 caracteres).";
+  if (m.includes("invalid email") || m.includes("unable to validate email"))
+    return "El correo electrónico no es válido.";
+  if (m.includes("email not confirmed")) return "Tu correo aún no está confirmado.";
+  return "No se pudo completar la operación. Inténtalo de nuevo.";
+}
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn } = useSession();
+  const supabase = useMemo(() => createClient(), []);
   const [tab, setTab] = useState<"in" | "up">("in");
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [email, setEmail] = useState("");
-
-  const submit = (e: FormEvent) => {
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    signIn({ name: (user || "PLAYER1").toUpperCase().slice(0, 10) });
+    if (sending) return;
+    setError(null);
+    setSending(true);
+    const { error: authError } =
+      tab === "in"
+        ? await supabase.auth.signInWithPassword({ email: email.trim(), password: pass })
+        : await supabase.auth.signUp({
+            email: email.trim(),
+            password: pass,
+            options: { data: { username: user.trim() } },
+          });
+    if (authError) {
+      setError(translateAuthError(authError.message));
+      setSending(false);
+      return;
+    }
     router.push("/");
+    router.refresh();
   };
-
+  /** Invitado: no crea cuenta en Supabase, solo entra sin sesión. */
   const playAsGuest = () => {
-    signIn(null);
     router.push("/");
   };
-
+  const switchTab = (next: "in" | "up") => {
+    setTab(next);
+    setError(null);
+  };
   return (
     <div className="av-auth-wrap fade-in">
       <div className="auth-card">
@@ -36,32 +66,30 @@ export default function LoginPage() {
             ACCESO AL SISTEMA · v2.6
           </div>
         </div>
-
         <div className="auth-tabs">
-          <button className={tab === "in" ? "on" : ""} onClick={() => setTab("in")}>
+          <button className={tab === "in" ? "on" : ""} onClick={() => switchTab("in")}>
             INICIAR SESIÓN
           </button>
-          <button className={tab === "up" ? "on" : ""} onClick={() => setTab("up")}>
+          <button className={tab === "up" ? "on" : ""} onClick={() => switchTab("up")}>
             CREAR CUENTA
           </button>
         </div>
-
         <form onSubmit={submit}>
-          <div className="field">
-            <label>Usuario</label>
-            <input value={user} onChange={(e) => setUser(e.target.value)} placeholder="px_kai" />
-          </div>
           {tab === "up" && (
-            <div className="field slide-in">
-              <label>Correo electrónico</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="jugador@vault.gg"
-              />
+            <div className="field">
+              <label>Usuario</label>
+              <input value={user} onChange={(e) => setUser(e.target.value)} placeholder="px_kai" />
             </div>
           )}
+          <div className="field">
+            <label>Correo electrónico</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="jugador@vault.gg"
+            />
+          </div>
           <div className="field">
             <label>Contraseña</label>
             <input
@@ -71,12 +99,20 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
-
-          <button className="btn lg" type="submit" style={{ width: "100%", marginTop: 8 }}>
-            {tab === "in" ? "ENTRAR AL VAULT" : "CREAR Y JUGAR"}
+          <button
+            className="btn lg"
+            type="submit"
+            disabled={sending}
+            style={{ width: "100%", marginTop: 8 }}
+          >
+            {sending ? "CONECTANDO…" : tab === "in" ? "ENTRAR AL VAULT" : "CREAR Y JUGAR"}
           </button>
         </form>
-
+        {error && (
+          <div className="auth-error" role="alert">
+            ▸ {error}
+          </div>
+        )}
         <button
           className="btn ghost"
           style={{ width: "100%", marginTop: 10 }}
@@ -84,17 +120,15 @@ export default function LoginPage() {
         >
           JUGAR COMO INVITADO
         </button>
-
         <div className="auth-divider">O CONTINÚA CON</div>
         <div className="social">
-          <button className="btn ghost" type="button">
+          <button className="btn ghost" type="button" disabled title="Próximamente">
             ◆ GOOGLE
           </button>
-          <button className="btn ghost" type="button">
+          <button className="btn ghost" type="button" disabled title="Próximamente">
             ▣ GITHUB
           </button>
         </div>
-
         <div
           style={{
             marginTop: 18,
