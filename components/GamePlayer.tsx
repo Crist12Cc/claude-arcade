@@ -16,13 +16,18 @@ import {
   createBloqueBusterEngine,
   type BloqueBusterEngine,
 } from '@/lib/games/bloque-buster/engine';
+import {
+  createSerpentinaEngine,
+  type SerpentinaEngine,
+} from '@/lib/games/serpentina/engine';
 type EngineState = {
   score: number;
   lives: number;
   level: number;
   gameOver: boolean;
 };
-type Engine = AsteroidsEngine | TetrisEngine | BloqueBusterEngine;
+type Engine =
+  AsteroidsEngine | TetrisEngine | BloqueBusterEngine | SerpentinaEngine;
 const ENGINES: Record<
   string,
   (
@@ -33,6 +38,7 @@ const ENGINES: Record<
   rocas: createAsteroidsEngine,
   caida: createTetrisEngine,
   'bloque-buster': createBloqueBusterEngine,
+  serpentina: createSerpentinaEngine,
 };
 export default function GamePlayer({ game }: { game: Game }) {
   const { user } = useSession();
