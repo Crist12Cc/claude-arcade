@@ -839,6 +839,19 @@ a { color: inherit; text-decoration: none; }
 .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .social { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .social .btn { padding: 12px; font-size: 9px; }
+.social .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+/* mensaje de error de autenticación — misma paleta que .contact-error (SPEC 03) */
+.auth-error {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: rgba(255, 0, 110, 0.06);
+  border: 1px solid var(--magenta);
+  color: var(--magenta);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.6;
+  text-shadow: 0 0 6px rgba(255, 0, 110, 0.35);
+}
 
 /* ===== salón ===== */
 .av-hall {
