@@ -4,28 +4,86 @@ export interface TetrisState {
   level: number;
   gameOver: boolean;
 }
+export interface SkinOption {
+  id: string;
+  label: string;
+}
 export interface TetrisEngine {
   start(): void;
   destroy(): void;
   setPaused(paused: boolean): void;
   restart(): void;
+  getSkins(): SkinOption[];
+  getSkin(): string;
+  setSkin(skin: string): void;
 }
 const COLS = 10;
 const ROWS = 20;
 const BLOCK = 30;
 const W = COLS * BLOCK;
 const H = ROWS * BLOCK;
-const COLORS = [
-  null,
-  '#4dd0e1', // I - cyan
-  '#ffd54f', // O - yellow
-  '#ba68c8', // T - purple
-  '#81c784', // S - green
-  '#e57373', // Z - red
-  '#90caf9', // J - pale blue
-  '#ffb74d', // L - orange
-  '#9e9e9e', // N - tuerca
-];
+type SkinId = 'neon' | 'retro' | 'clasico';
+const SKIN_ORDER: SkinId[] = ['clasico', 'neon', 'retro'];
+const SKIN_LABELS: Record<SkinId, string> = {
+  clasico: 'CLÁSICO',
+  neon: 'NEÓN',
+  retro: 'RETRO',
+};
+const PALETTES: Record<SkinId, (string | null)[]> = {
+  clasico: [
+    null,
+    '#4dd0e1', // I - cyan
+    '#ffd54f', // O - yellow
+    '#ba68c8', // T - purple
+    '#81c784', // S - green
+    '#e57373', // Z - red
+    '#90caf9', // J - pale blue
+    '#ffb74d', // L - orange
+    '#9e9e9e', // N - tuerca
+  ],
+  neon: [
+    null,
+    '#00fff9', // I
+    '#faff00', // O
+    '#ff00e6', // T
+    '#00ff66', // S
+    '#ff0033', // Z
+    '#2979ff', // J
+    '#ff9100', // L
+    '#e0e0e0', // N
+  ],
+  retro: [
+    null,
+    '#4e7cff', // I
+    '#f7d51d', // O
+    '#7d3ac1', // T
+    '#4caf50', // S
+    '#c1272d', // Z
+    '#8e6bb0', // J
+    '#e07b39', // L
+    '#8d8d8d', // N
+  ],
+};
+const BOARD_BG: Record<SkinId, string> = {
+  clasico: '#000',
+  neon: '#08010f',
+  retro: '#1a1410',
+};
+const GRID_LINE: Record<SkinId, string> = {
+  clasico: 'rgba(255,255,255,0.08)',
+  neon: 'rgba(0,255,249,0.15)',
+  retro: 'rgba(247,213,29,0.12)',
+};
+const SKIN_STORAGE_KEY = 'tetris-skin';
+function loadSkin(): SkinId {
+  if (typeof window === 'undefined') return 'clasico';
+  const stored = window.localStorage.getItem(SKIN_STORAGE_KEY);
+  return SKIN_ORDER.includes(stored as SkinId) ? (stored as SkinId) : 'clasico';
+}
+function saveSkin(skin: SkinId) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(SKIN_STORAGE_KEY, skin);
+}
 const PIECES: (number[][] | null)[] = [
   null,
   [
@@ -88,6 +146,7 @@ export function createTetrisEngine(
   let dropInterval = 1000;
   let lastTime: number | null = null;
   let rafId: number | null = null;
+  let skin: SkinId = loadSkin();
   function createBoard(): number[][] {
     return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
   }
@@ -199,7 +258,7 @@ export function createTetrisEngine(
     alpha?: number
   ) {
     if (!colorIndex) return;
-    const color = COLORS[colorIndex]!;
+    const color = PALETTES[skin][colorIndex]!;
     context.globalAlpha = alpha ?? 1;
     context.fillStyle = color;
     context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
@@ -208,7 +267,7 @@ export function createTetrisEngine(
     context.globalAlpha = 1;
   }
   function drawGrid() {
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.strokeStyle = GRID_LINE[skin];
     ctx.lineWidth = 0.5;
     for (let c = 1; c < COLS; c++) {
       ctx.beginPath();
@@ -224,7 +283,7 @@ export function createTetrisEngine(
     }
   }
   function draw() {
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = BOARD_BG[skin];
     ctx.fillRect(0, 0, W, H);
     drawGrid();
     for (let r = 0; r < ROWS; r++)
@@ -329,6 +388,17 @@ export function createTetrisEngine(
     restart() {
       initGame();
       lastTime = null;
+    },
+    getSkins() {
+      return SKIN_ORDER.map((id) => ({ id, label: SKIN_LABELS[id] }));
+    },
+    getSkin() {
+      return skin;
+    },
+    setSkin(value: string) {
+      if (!SKIN_ORDER.includes(value as SkinId)) return;
+      skin = value as SkinId;
+      saveSkin(skin);
     },
   };
 }

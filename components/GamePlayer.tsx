@@ -28,6 +28,18 @@ type EngineState = {
 };
 type Engine =
   AsteroidsEngine | TetrisEngine | BloqueBusterEngine | SerpentinaEngine;
+type SkinCapableEngine = Engine & {
+  getSkins: () => { id: string; label: string }[];
+  getSkin: () => string;
+  setSkin: (skin: string) => void;
+};
+function hasSkins(engine: Engine | null): engine is SkinCapableEngine {
+  return (
+    !!engine &&
+    typeof (engine as SkinCapableEngine).getSkins === 'function' &&
+    typeof (engine as SkinCapableEngine).setSkin === 'function'
+  );
+}
 const ENGINES: Record<
   string,
   (
@@ -51,6 +63,10 @@ export default function GamePlayer({ game }: { game: Game }) {
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [skinOptions, setSkinOptions] = useState<
+    { id: string; label: string }[]
+  >([]);
+  const [skin, setSkin] = useState('');
   const level = hasEngine ? engineLevel : Math.floor(score / 2500) + 1;
   const name = user ? user.name : 'INVITADO';
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -78,11 +94,24 @@ export default function GamePlayer({ game }: { game: Game }) {
     });
     engineRef.current = engine;
     engine.start();
+    if (hasSkins(engine)) {
+      setSkinOptions(engine.getSkins());
+      setSkin(engine.getSkin());
+    } else {
+      setSkinOptions([]);
+      setSkin('');
+    }
     return () => {
       engine.destroy();
       engineRef.current = null;
     };
   }, [engineFactory]);
+  const changeSkin = (value: string) => {
+    if (hasSkins(engineRef.current)) {
+      engineRef.current.setSkin(value);
+      setSkin(value);
+    }
+  };
   useEffect(() => {
     if (hasEngine) engineRef.current?.setPaused(paused || over);
   }, [hasEngine, paused, over]);
@@ -156,6 +185,38 @@ export default function GamePlayer({ game }: { game: Game }) {
               <div className="enemy e2" />
               <div className="enemy e3" />
               <div className="player-ship" />
+            </div>
+          )}
+          {skinOptions.length > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 10,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 6,
+              }}
+            >
+              <select
+                className="mono"
+                value={skin}
+                onChange={(e) => changeSkin(e.target.value)}
+                style={{
+                  background: 'rgba(0,0,0,0.7)',
+                  color: 'var(--ink)',
+                  border: '1px solid var(--ink-dim)',
+                  borderRadius: 4,
+                  padding: '4px 8px',
+                  fontSize: 11,
+                  letterSpacing: '0.08em',
+                }}
+              >
+                {skinOptions.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
           {paused && (
