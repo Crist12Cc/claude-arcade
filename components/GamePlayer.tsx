@@ -61,8 +61,8 @@ export default function GamePlayer({ game }: { game: Game }) {
     };
   }, [asteroids]);
   useEffect(() => {
-    if (asteroids) engineRef.current?.setPaused(paused);
-  }, [asteroids, paused]);
+    if (asteroids) engineRef.current?.setPaused(paused || over);
+  }, [asteroids, paused, over]);
   const endGame = () => setOver(true);
   const restart = () => {
     if (asteroids) {
