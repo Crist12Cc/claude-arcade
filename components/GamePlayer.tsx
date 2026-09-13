@@ -8,34 +8,55 @@ import {
   createAsteroidsEngine,
   type AsteroidsEngine,
 } from '@/lib/games/asteroids/engine';
-const isAsteroids = (game: Game) => game.id === 'rocas';
+import {
+  createTetrisEngine,
+  type TetrisEngine,
+} from '@/lib/games/tetris/engine';
+type EngineState = {
+  score: number;
+  lives: number;
+  level: number;
+  gameOver: boolean;
+};
+type Engine = AsteroidsEngine | TetrisEngine;
+const ENGINES: Record<
+  string,
+  (
+    canvas: HTMLCanvasElement,
+    onStateChange: (state: EngineState) => void
+  ) => Engine
+> = {
+  rocas: createAsteroidsEngine,
+  caida: createTetrisEngine,
+};
 export default function GamePlayer({ game }: { game: Game }) {
   const { user } = useSession();
   const supabase = useMemo(() => createClient(), []);
-  const asteroids = isAsteroids(game);
+  const engineFactory = ENGINES[game.id];
+  const hasEngine = !!engineFactory;
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [engineLevel, setEngineLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [saved, setSaved] = useState(false);
-  const level = asteroids ? engineLevel : Math.floor(score / 2500) + 1;
+  const level = hasEngine ? engineLevel : Math.floor(score / 2500) + 1;
   const name = user ? user.name : 'INVITADO';
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const engineRef = useRef<AsteroidsEngine | null>(null);
+  const engineRef = useRef<Engine | null>(null);
   const gameOverHandledRef = useRef(false);
   useEffect(() => {
-    if (asteroids) return;
+    if (hasEngine) return;
     if (over || paused) return;
     const t = setInterval(() => {
       setScore((s) => s + Math.floor(10 + Math.random() * 90));
     }, 220);
     return () => clearInterval(t);
-  }, [asteroids, over, paused]);
+  }, [hasEngine, over, paused]);
   useEffect(() => {
-    if (!asteroids || !canvasRef.current) return;
+    if (!engineFactory || !canvasRef.current) return;
     gameOverHandledRef.current = false;
-    const engine = createAsteroidsEngine(canvasRef.current, (state) => {
+    const engine = engineFactory(canvasRef.current, (state) => {
       setScore(state.score);
       setLives(state.lives);
       setEngineLevel(state.level);
@@ -50,13 +71,13 @@ export default function GamePlayer({ game }: { game: Game }) {
       engine.destroy();
       engineRef.current = null;
     };
-  }, [asteroids]);
+  }, [engineFactory]);
   useEffect(() => {
-    if (asteroids) engineRef.current?.setPaused(paused || over);
-  }, [asteroids, paused, over]);
+    if (hasEngine) engineRef.current?.setPaused(paused || over);
+  }, [hasEngine, paused, over]);
   const endGame = () => setOver(true);
   const restart = () => {
-    if (asteroids) {
+    if (hasEngine) {
       gameOverHandledRef.current = false;
       engineRef.current?.restart();
     } else {
@@ -110,7 +131,7 @@ export default function GamePlayer({ game }: { game: Game }) {
       </div>
       <div className="crt">
         <div className="crt-screen">
-          {asteroids ? (
+          {hasEngine ? (
             <canvas
               ref={canvasRef}
               width={800}
