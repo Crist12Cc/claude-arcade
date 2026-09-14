@@ -20,6 +20,10 @@ import {
   createSerpentinaEngine,
   type SerpentinaEngine,
 } from '@/lib/games/serpentina/engine';
+import {
+  createRanariaEngine,
+  type RanariaEngine,
+} from '@/lib/games/ranaria/engine';
 type EngineState = {
   score: number;
   lives: number;
@@ -27,7 +31,11 @@ type EngineState = {
   gameOver: boolean;
 };
 type Engine =
-  AsteroidsEngine | TetrisEngine | BloqueBusterEngine | SerpentinaEngine;
+  | AsteroidsEngine
+  | TetrisEngine
+  | BloqueBusterEngine
+  | SerpentinaEngine
+  | RanariaEngine;
 type SkinCapableEngine = Engine & {
   getSkins: () => { id: string; label: string }[];
   getSkin: () => string;
@@ -51,6 +59,7 @@ const ENGINES: Record<
   caida: createTetrisEngine,
   'bloque-buster': createBloqueBusterEngine,
   serpentina: createSerpentinaEngine,
+  ranaria: createRanariaEngine,
 };
 export default function GamePlayer({ game }: { game: Game }) {
   const { user } = useSession();
