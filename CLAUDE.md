@@ -69,7 +69,13 @@ Specs live in `specs/` (`01`–`09` so far, each marked "Implementado" once done
 
 ## Project subagents
 
-- `game-curator` (`.claude/agents/game-curator.md`) — read-only planner that decides which game to port next: reads `references/impl-games.md`, `references/started-games/`, and `specs/`, and keeps persistent memory of its past suggestions in `references/game-suggestions-todo.md` so it doesn't repeat itself across runs. It never implements a port — use the `new-game` skill for that once a suggestion is chosen.
-- `game-jam-designer` (`.claude/agents/game-jam-designer.md`) — redacta UNA propuesta completa de juego (spec en formato `specs/`) a partir de un tema y un ángulo de diseño asignado. Usado en paralelo por la skill `game-jam`. No implementa código ni toca el catálogo real.
-- `mobile-reviewer` (`.claude/agents/mobile-reviewer.md`) — revisor de solo lectura (con permiso de escritura únicamente sobre el checklist) que audita si un juego se ve y funciona bien en web y en móvil. Actualiza `references/mobile-review-checklist.md` con el resultado. No corrige código.
-- `skin-reviewer` (`.claude/agents/skin-reviewer.md`) — revisor de código de solo lectura que verifica si un juego implementa al menos 3 skins visuales (neon, retro, clásico/default). No implementa ni corrige código — solo reporta hallazgos.
+Ver `.claude/agents/<nombre>.md` de cada uno para el detalle completo (tools, prompt, comportamiento).
+
+- `game-curator` — decide qué juego portar a continuación (solo lectura, mantiene memoria en `references/game-suggestions-todo.md`).
+- `game-planner` — propone el próximo juego a implementar y mantiene un to-do persistente en `references/game-suggestions-todo.md`.
+- `game-jam` — dado un tema, diseña un juego nuevo y genera specs en `specs/game-jam/`.
+- `game-jam-designer` — redacta una propuesta de juego individual; usado en paralelo por la skill `game-jam`.
+- `skin-designer` — aplica los 3 skins canónicos (classic, retro, neon) a un juego indicado.
+- `skin-reviewer` — audita de solo lectura si un juego implementa los 3 skins.
+- `mobile-porter` — aplica soporte táctil mobile a un juego indicado.
+- `mobile-reviewer` — audita de solo lectura si un juego funciona bien en web y mobile.
