@@ -355,7 +355,7 @@ export function createRanariaEngine(
     if (gameOver) return;
     for (const lane of lanes) {
       for (const e of lane.entities) {
-        e.col += lane.dir * lane.speed * dt;
+        e.col += (lane.dir * lane.speed * dt) / CELL;
         if (lane.dir === 1 && e.col > COLS + 4) e.col = -e.width - 4;
         if (lane.dir === -1 && e.col < -e.width - 4) e.col = COLS + 4;
         if (e.type === 'turtle') {

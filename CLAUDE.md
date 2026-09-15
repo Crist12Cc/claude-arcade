@@ -64,6 +64,7 @@ Specs live in `specs/` (`01`–`09` so far, each marked "Implementado" once done
 
 - `new-game` (`.claude/skills/new-game/SKILL.md`) — repeatable pattern for porting a new game into the catalog: engine in `lib/games/<id>/engine.ts`, registration in `GamePlayer.tsx`, seed row in Supabase `games`, cover CSS class `cover-<id>`. Reference sources for not-yet-ported games live under `references/started-games/`.
 - `game-jam` (`.claude/skills/game-jam/SKILL.md`) — genera 3 propuestas de juego distintas y en paralelo a partir de un tema libre, cada una con spec completa, guardadas en carpetas versionadas bajo `specs/game-jam/`. El usuario elige una al final.
+- `spec-impl-game` (`.claude/skills/spec-impl-game/SKILL.md`) — igual que `/spec-impl` (valida estado Aprobado, crea rama `spec-NN-slug`, implementa paso a paso con pausas), y al terminar dispara secuencialmente (nunca en paralelo) los agentes `skin-designer` y luego `mobile-porter` sobre el juego recién implementado.
 - `worktree` — spins up an isolated git worktree under `.trees/<name>` to run a requirement without touching the main checkout.
 
 ## Project subagents
