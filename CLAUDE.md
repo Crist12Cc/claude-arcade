@@ -79,3 +79,4 @@ Ver `.claude/agents/<nombre>.md` de cada uno para el detalle completo (tools, pr
 - `skin-reviewer` — audita de solo lectura si un juego implementa los 3 skins.
 - `mobile-porter` — aplica soporte táctil mobile a un juego indicado.
 - `mobile-reviewer` — audita de solo lectura si un juego funciona bien en web y mobile.
+- `security-reviewer` — audita de solo lectura la seguridad de base de datos (RLS, SECURITY DEFINER, advisors de Supabase) y de la aplicación (rutas protegidas, auth, exposición de env vars); mantiene `references/security-review-checklist.md`.
